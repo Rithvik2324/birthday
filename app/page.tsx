@@ -55,6 +55,7 @@ function SmartImg({
   loading,
   style,
   motionProps,
+  onFailFinal,
 }: {
   srcBase: string;
   alt?: string;
@@ -63,6 +64,7 @@ function SmartImg({
   loading?: "lazy" | "eager";
   style?: React.CSSProperties;
   motionProps?: any;
+  onFailFinal?: () => void;
 }) {
   const imgExtensions = [".jpg", ".JPG", ".jpeg", ".JPEG"];
   const videoExtensions: string[] = [];
@@ -77,7 +79,12 @@ function SmartImg({
 
   function handleError() {
     if (i + 1 < candidates.length) setI(i + 1);
-    else setHidden(true);
+    else {
+      try {
+        onFailFinal?.();
+      } catch (e) {}
+      setHidden(true);
+    }
   }
 
   if (hidden) return null;
@@ -329,6 +336,7 @@ useEffect(() => {
       index,
       captions,
       locked,
+      favorites,
       jarHearts,
     };
     try {
@@ -340,6 +348,14 @@ useEffect(() => {
   useEffect(() => {
     if (uploads.length) setPhotos((p) => [...uploads, ...p.filter((x) => !uploads.includes(x))]);
   }, [uploads]);
+
+  // favorites toggle
+  function toggleFavorite(p: string) {
+    setFavorites((cur) => {
+      if (cur.includes(p)) return cur.filter((x) => x !== p);
+      return [p, ...cur];
+    });
+  }
 
   // setup audio
   useEffect(() => {
